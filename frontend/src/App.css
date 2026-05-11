@@ -5,7 +5,19 @@
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: #0D1B2A;
-  color: #E0E1DD;
+  font-family: 'Inter', 'DM Sans', sans-serif;
+  background: #F4F6FB;
+  color: #1a1a2e;
+  overflow: hidden;
 }
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c5cde8; border-radius: 4px; }
