@@ -1,0 +1,93 @@
+import pool from '../db.js'
+
+export const getVehiculos = async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        v.id_vehiculo, v.placa, v.vin, v.num_motor,
+        v.num_chasis, v.modelo_anio,
+        l.nombre_linea, m.nombre_marca,
+        tv.descripcion AS tipo_vehiculo,
+        tu.descripcion AS tipo_uso
+      FROM tarjeta_circulacion.vehiculo v
+      JOIN tarjeta_circulacion.linea l ON v.id_linea = l.id_linea
+      JOIN tarjeta_circulacion.marca m ON l.id_marca = m.id_marca
+      JOIN tarjeta_circulacion.tipo_vehiculo tv ON v.id_tipo_vehiculo = tv.id_tipo_vehiculo
+      JOIN tarjeta_circulacion.tipo_uso tu ON v.id_tipo_uso = tu.id_tipo_uso
+      ORDER BY v.id_vehiculo DESC
+    `)
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
+
+export const cambiarMotor = async (req, res) => {
+  const { id } = req.params
+  const { num_motor_nuevo, motivo } = req.body
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    const { rows: vehiculo } = await client.query(`
+      SELECT num_motor FROM tarjeta_circulacion.vehiculo WHERE id_vehiculo = $1
+    `, [id])
+    if (!vehiculo.length) return res.status(404).json({ error: 'Vehículo no encontrado' })
+
+    await client.query(`
+      INSERT INTO tarjeta_circulacion.historial_motor
+        (id_vehiculo, num_motor_anterior, num_motor_nuevo, motivo)
+      VALUES ($1, $2, $3, $4)
+    `, [id, vehiculo[0].num_motor, num_motor_nuevo, motivo])
+
+    await client.query(`
+      UPDATE tarjeta_circulacion.vehiculo
+      SET num_motor = $1
+      WHERE id_vehiculo = $2
+    `, [num_motor_nuevo, id])
+
+    await client.query('COMMIT')
+    res.json({ message: 'Motor actualizado correctamente' })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    res.status(500).json({ error: err.message })
+  } finally {
+    client.release()
+  }
+}
+
+export const cambiarColor = async (req, res) => {
+  const { id } = req.params
+  const { color_anterior, color_nuevo, es_principal, motivo } = req.body
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    await client.query(`
+      INSERT INTO tarjeta_circulacion.historial_color
+        (id_vehiculo, color_anterior, color_nuevo, es_principal, motivo)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [id, color_anterior, color_nuevo, es_principal, motivo])
+
+    if (color_anterior) {
+      await client.query(`
+        UPDATE tarjeta_circulacion.color_vehiculo
+        SET color = $1, es_principal = $2
+        WHERE id_vehiculo = $3 AND color = $4
+      `, [color_nuevo, es_principal, id, color_anterior])
+    } else {
+      await client.query(`
+        INSERT INTO tarjeta_circulacion.color_vehiculo (id_vehiculo, color, es_principal)
+        VALUES ($1, $2, $3)
+      `, [id, color_nuevo, es_principal])
+    }
+
+    await client.query('COMMIT')
+    res.json({ message: 'Color actualizado correctamente' })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    res.status(500).json({ error: err.message })
+  } finally {
+    client.release()
+  }
+}
