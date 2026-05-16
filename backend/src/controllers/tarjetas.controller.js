@@ -195,16 +195,68 @@ export const getEstadisticas = async (req, res) => {
 
 export const renovarTarjeta = async (req, res) => {
   const { num } = req.params
-  const { fecha_vencimiento } = req.body
+  const { fecha_vencimiento, motivo } = req.body
+  const client = await pool.connect()
   try {
-    const { rows } = await pool.query(`
+    await client.query('BEGIN')
+    const { rows } = await client.query(`
       UPDATE tarjeta_circulacion.tarjeta_circulacion
       SET estado = 'Activa', fecha_vencimiento = $1, motivo_desactivacion = NULL
-      WHERE num_tarjeta = $2 AND estado = 'Vencida'
+      WHERE num_tarjeta = $2 AND estado IN ('Vencida', 'Desactivada', 'Desactivada por impago')
       RETURNING *
     `, [fecha_vencimiento, num])
-    if (!rows.length) return res.status(400).json({ error: 'La tarjeta no existe o no está vencida' })
+    if (!rows.length) return res.status(400).json({ error: 'Tarjeta no encontrada o no se puede renovar' })
+    await client.query(`
+      INSERT INTO tarjeta_circulacion.historial_renovacion
+        (num_tarjeta, nueva_fecha_vencimiento, motivo)
+      VALUES ($1, $2, $3)
+    `, [num, fecha_vencimiento, motivo || null])
+    await client.query('COMMIT')
     res.json(rows[0])
+  } catch (err) {
+    await client.query('ROLLBACK')
+    res.status(500).json({ error: err.message })
+  } finally { client.release() }
+}
+
+export const pagarTarjeta = async (req, res) => {
+  const { num } = req.params
+  const { motivo } = req.body
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const { rows } = await client.query(`
+      UPDATE tarjeta_circulacion.tarjeta_circulacion
+      SET estado = 'Activa', motivo_desactivacion = NULL
+      WHERE num_tarjeta = $1 AND estado = 'Desactivada por impago'
+      RETURNING fecha_vencimiento
+    `, [num])
+    if (!rows.length) return res.status(400).json({ error: 'Tarjeta no encontrada o no está desactivada por impago' })
+    
+    await client.query(`
+      INSERT INTO tarjeta_circulacion.historial_renovacion
+        (num_tarjeta, nueva_fecha_vencimiento, motivo)
+      VALUES ($1, $2, $3)
+    `, [num, rows[0].fecha_vencimiento, motivo || 'Reactivación por pago'])
+    
+    await client.query('COMMIT')
+    res.json(rows[0])
+  } catch (err) {
+    await client.query('ROLLBACK')
+    res.status(500).json({ error: err.message })
+  } finally { client.release() }
+}
+
+export const getHistorialRenovaciones = async (req, res) => {
+  const { num } = req.params
+  try {
+    const { rows } = await pool.query(`
+      SELECT id_renovacion, fecha_renovacion, nueva_fecha_vencimiento, motivo
+      FROM tarjeta_circulacion.historial_renovacion
+      WHERE num_tarjeta = $1
+      ORDER BY fecha_renovacion DESC
+    `, [num])
+    res.json(rows)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

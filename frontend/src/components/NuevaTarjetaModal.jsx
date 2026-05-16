@@ -10,9 +10,11 @@ export default function NuevaTarjetaModal({ onClose, onSuccess }) {
   const [loading, setLoading]           = useState(false)
   const [error, setError]               = useState(null)
 
+  const hoy = new Date().toISOString().split('T')[0]
+
   const [form, setForm] = useState({
     num_tarjeta: '', id_propietario: '', id_vehiculo: '',
-    num_certificado_propiedad: '', fecha_emision: '', fecha_vencimiento: '',
+    num_certificado_propiedad: '', fecha_emision: hoy, fecha_vencimiento: '',
   })
 
   useEffect(() => {
@@ -25,6 +27,14 @@ export default function NuevaTarjetaModal({ onClose, onSuccess }) {
   const handleSubmit = async () => {
     if (!form.num_tarjeta || !form.id_propietario || !form.id_vehiculo || !form.fecha_emision || !form.fecha_vencimiento) {
       setError('Completá todos los campos obligatorios.')
+      return
+    }
+    if (form.fecha_vencimiento <= hoy) {
+      setError('La fecha de vencimiento debe ser futura.')
+      return
+    }
+    if (form.fecha_vencimiento <= form.fecha_emision) {
+      setError('La fecha de vencimiento debe ser posterior a la de emisión.')
       return
     }
     setLoading(true); setError(null)
@@ -67,7 +77,12 @@ export default function NuevaTarjetaModal({ onClose, onSuccess }) {
         </div>
         <div style={fieldStyle}>
           <label style={labelStyle}>Fecha de vencimiento *</label>
-          <input style={inputStyle} type="date" name="fecha_vencimiento" value={form.fecha_vencimiento} onChange={handleChange} />
+          <input
+            style={inputStyle} type="date" name="fecha_vencimiento"
+            value={form.fecha_vencimiento}
+            min={form.fecha_emision || hoy}
+            onChange={handleChange}
+          />
         </div>
       </div>
       {error && <p style={{ color: colors.danger, fontSize: '12px', marginBottom: '12px' }}>{error}</p>}

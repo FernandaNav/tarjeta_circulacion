@@ -6,7 +6,7 @@ import { colors, radius } from '../styles/theme'
 
 export default function DesactivarModal({ tarjeta, onClose, onSuccess }) {
   const [motivo, setMotivo]   = useState('')
-  const [tipo, setTipo]       = useState('Desactivada por impago')
+  const [tipo, setTipo]       = useState('Desactivada')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
 
@@ -37,16 +37,19 @@ export default function DesactivarModal({ tarjeta, onClose, onSuccess }) {
       <div style={{ marginBottom: '16px' }}>
         <label style={labelStyle}>Tipo de desactivación *</label>
         <div style={{ display: 'flex', gap: '8px' }}>
-          {['Desactivada por impago', 'Desactivada'].map(t => (
-            <button key={t} onClick={() => setTipo(t)} style={{
+          {[
+            { key: 'Desactivada',            label: '✕ Por otra razón' },
+            { key: 'Desactivada por impago', label: '💳 Por impago'    },
+          ].map(t => (
+            <button key={t.key} onClick={() => setTipo(t.key)} style={{
               flex: 1, padding: '9px', borderRadius: radius.md,
-              border: `1.5px solid ${tipo === t ? colors.danger : colors.border}`,
-              background: tipo === t ? colors.dangerBg : 'transparent',
-              color: tipo === t ? colors.danger : colors.textSub,
+              border: `1.5px solid ${tipo === t.key ? colors.danger : colors.border}`,
+              background: tipo === t.key ? colors.dangerBg : 'transparent',
+              color: tipo === t.key ? colors.danger : colors.textSub,
               cursor: 'pointer', fontSize: '12px', fontWeight: '600',
-              fontFamily: 'Inter, DM Sans, sans-serif', transition: 'all 0.15s'
+              fontFamily: "'Poppins', sans-serif", transition: 'all 0.15s'
             }}>
-              {t === 'Desactivada por impago' ? '💳 Por impago' : '📅 Por vencimiento'}
+              {t.label}
             </button>
           ))}
         </div>
@@ -62,7 +65,6 @@ export default function DesactivarModal({ tarjeta, onClose, onSuccess }) {
       </div>
 
       {error && <p style={{ color: colors.danger, fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
-
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
         <button style={btnSecondary} onClick={onClose}>Cancelar</button>
         <button style={btnDanger} onClick={handleSubmit} disabled={loading}>

@@ -204,14 +204,14 @@ export default function Vehiculos() {
             <div style={fieldStyle}>
               <label style={labelStyle}>Marca *</label>
               <select style={inputStyle} name="id_marca" value={form.id_marca} onChange={handleChange}>
-                <option value="" disabled>Seleccioná</option>
+                <option value="" disabled>Selecciona</option>
                 {marcas.map(m => <option key={m.id_marca} value={m.id_marca}>{m.nombre_marca}</option>)}
               </select>
             </div>
             <div style={fieldStyle}>
               <label style={labelStyle}>Línea *</label>
               <select style={inputStyle} name="id_linea" value={form.id_linea} onChange={handleChange} disabled={!form.id_marca}>
-                <option value="" disabled>Seleccioná</option>
+                <option value="" disabled>Selecciona</option>
                 {lineasFiltradas.map(l => <option key={l.id_linea} value={l.id_linea}>{l.nombre_linea}</option>)}
               </select>
             </div>
@@ -221,14 +221,14 @@ export default function Vehiculos() {
             <div style={fieldStyle}>
               <label style={labelStyle}>Tipo de vehículo *</label>
               <select style={inputStyle} name="id_tipo_vehiculo" value={form.id_tipo_vehiculo} onChange={handleChange}>
-                <option value="" disabled>Seleccioná</option>
+                <option value="" disabled>Selecciona</option>
                 {tiposVehiculo.map(t => <option key={t.id_tipo_vehiculo} value={t.id_tipo_vehiculo}>{t.descripcion}</option>)}
               </select>
             </div>
             <div style={fieldStyle}>
               <label style={labelStyle}>Tipo de uso *</label>
               <select style={inputStyle} name="id_tipo_uso" value={form.id_tipo_uso} onChange={handleChange}>
-                <option value="" disabled>Seleccioná</option>
+                <option value="" disabled>Selecciona</option>
                 {tiposUso.map(t => <option key={t.id_tipo_uso} value={t.id_tipo_uso}>{t.descripcion}</option>)}
               </select>
             </div>

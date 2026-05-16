@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import { tarjetasService, vehiculosService } from '../services/api'
 import { colors, radius } from '../styles/theme'
+import axios from 'axios'
+
+const api = axios.create({ baseURL: 'http://localhost:3000/api' })
 
 export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
-  const [detalle, setDetalle]           = useState(null)
-  const [historial, setHistorial]       = useState([])
-  const [histMotor, setHistMotor]       = useState([])
-  const [histColor, setHistColor]       = useState([])
-  const [loading, setLoading]           = useState(true)
+  const [detalle, setDetalle]         = useState(null)
+  const [historial, setHistorial]     = useState([])
+  const [histMotor, setHistMotor]     = useState([])
+  const [histColor, setHistColor]     = useState([])
+  const [histRenovacion, setHistRenovacion] = useState([])
+  const [loading, setLoading]         = useState(true)
 
   useEffect(() => {
     if (!tarjeta) return
@@ -16,12 +20,14 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
       tarjetasService.getHistorial(tarjeta.num_tarjeta),
       vehiculosService.getHistorialMotor(tarjeta.id_vehiculo),
       vehiculosService.getHistorialColor(tarjeta.id_vehiculo),
+      api.get(`/tarjetas/${tarjeta.num_tarjeta}/historial-renovaciones`),
     ])
-      .then(([det, hist, motor, color]) => {
+      .then(([det, hist, motor, color, renov]) => {
         setDetalle(det.data)
         setHistorial(hist.data)
         setHistMotor(motor.data)
         setHistColor(color.data)
+        setHistRenovacion(renov.data)
       })
       .finally(() => setLoading(false))
   }, [tarjeta])
@@ -29,10 +35,10 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
   const fecha = (f) => f ? new Date(f).toLocaleDateString('es-GT') : '—'
 
   const estadoConfig = {
-    'Activa':                 { color: colors.success,  bg: colors.successBg  },
-    'Vencida':                { color: colors.danger,   bg: colors.dangerBg   },
-    'Desactivada':            { color: colors.danger,   bg: colors.dangerBg   },
-    'Desactivada por impago': { color: colors.warning,  bg: colors.warningBg  },
+    'Activa':                 { color: colors.success, bg: colors.successBg  },
+    'Vencida':                { color: colors.danger,  bg: colors.dangerBg   },
+    'Desactivada':            { color: colors.danger,  bg: colors.dangerBg   },
+    'Desactivada por impago': { color: colors.warning, bg: colors.warningBg  },
   }
 
   return (
@@ -115,6 +121,28 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                 <Row label="Num. chasis" value={detalle.num_chasis || '—'} mono />
               </Section>
 
+              {/* HISTORIAL RENOVACIONES */}
+              <Section title={`Historial de renovaciones (${histRenovacion.length})`}>
+                {histRenovacion.length === 0
+                  ? <p style={{ fontSize: '12px', color: colors.textSub }}>Sin renovaciones</p>
+                  : histRenovacion.map((h, i) => (
+                    <div key={i} style={{
+                      background: colors.successBg, border: `1px solid ${colors.successDot}33`,
+                      borderRadius: radius.md, padding: '12px', marginBottom: '8px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '600', color: colors.success }}>↺ Renovada</span>
+                        <span style={{ fontSize: '11px', color: colors.textSub }}>{fecha(h.fecha_renovacion)}</span>
+                      </div>
+                      <p style={{ fontSize: '11px', color: colors.textSub }}>
+                        Nueva vigencia hasta: <strong>{fecha(h.nueva_fecha_vencimiento)}</strong>
+                      </p>
+                      {h.motivo && <p style={{ fontSize: '11px', color: colors.textSub, marginTop: '4px' }}>{h.motivo}</p>}
+                    </div>
+                  ))
+                }
+              </Section>
+
               {/* HISTORIAL PROPIETARIOS */}
               <Section title={`Historial de propietarios (${historial.length})`}>
                 {historial.length === 0 && <p style={{ fontSize: '12px', color: colors.textSub }}>Sin historial</p>}
@@ -131,7 +159,7 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                         </span>
                       )}
                     </div>
-                    <p style={{ fontSize: '11px', color: colors.textSub, fontFamily: "'Poppins', sans-serif" }}>
+                    <p style={{ fontSize: '11px', color: colors.textSub, fontFamily: 'monospace' }}>
                       {fecha(h.fecha_inicio)} → {h.fecha_fin ? fecha(h.fecha_fin) : 'presente'}
                     </p>
                     {h.motivo_cambio && <p style={{ fontSize: '11px', color: colors.textSub, marginTop: '4px' }}>{h.motivo_cambio}</p>}
@@ -149,11 +177,11 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                       borderRadius: radius.md, padding: '12px', marginBottom: '8px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.textSub, textDecoration: 'line-through' }}>
+                        <span style={{ fontSize: '11px', fontFamily: 'monospace', color: colors.textSub, textDecoration: 'line-through' }}>
                           {h.num_motor_anterior || '—'}
                         </span>
                         <span style={{ color: colors.textMuted, fontSize: '12px' }}>→</span>
-                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.primary, fontWeight: '600' }}>
+                        <span style={{ fontSize: '11px', fontFamily: 'monospace', color: colors.primary, fontWeight: '600' }}>
                           {h.num_motor_nuevo}
                         </span>
                       </div>
@@ -174,11 +202,11 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                       borderRadius: radius.md, padding: '12px', marginBottom: '8px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.textSub, textDecoration: 'line-through' }}>
+                        <span style={{ fontSize: '11px', color: colors.textSub, textDecoration: 'line-through' }}>
                           {h.color_anterior || '—'}
                         </span>
                         <span style={{ color: colors.textMuted, fontSize: '12px' }}>→</span>
-                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.primary, fontWeight: '600' }}>
+                        <span style={{ fontSize: '11px', color: colors.primary, fontWeight: '600' }}>
                           {h.color_nuevo}
                           {h.es_principal && <span style={{ marginLeft: '4px', fontSize: '10px', color: colors.success }}>(principal)</span>}
                         </span>
@@ -216,7 +244,7 @@ function Row({ label, value, mono }) {
       <span style={{ fontSize: '12px', color: colors.textSub, minWidth: '100px' }}>{label}</span>
       <span style={{
         fontSize: '12px', color: colors.textMain, textAlign: 'right',
-        maxWidth: '220px', fontFamily: mono ? "'Poppins', sans-serif" : 'inherit',
+        maxWidth: '220px', fontFamily: mono ? 'monospace' : 'inherit',
         fontWeight: mono ? '600' : '400'
       }}>{value}</span>
     </div>

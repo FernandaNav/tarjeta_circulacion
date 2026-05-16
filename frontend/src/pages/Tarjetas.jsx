@@ -7,6 +7,7 @@ import CambioMotorModal from '../components/CambioMotorModal'
 import CambioColorModal from '../components/CambioColorModal'
 import DetalleTarjetaPanel from '../components/DetalleTarjetaPanel'
 import RenovarModal from '../components/RenovarModal'
+import PagarModal from '../components/PagarModal'
 import { colors, shadows, radius } from '../styles/theme'
 
 const estadoConfig = {
@@ -27,7 +28,7 @@ function MenuAcciones({ tarjeta, onAccion }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  if (tarjeta.estado !== 'Activa' && tarjeta.estado !== 'Vencida') return null
+  if (tarjeta.estado !== 'Activa' && tarjeta.estado !== 'Vencida' && tarjeta.estado !== 'Desactivada por impago') return null
 
   if (tarjeta.estado === 'Vencida') return (
     <div onClick={e => e.stopPropagation()}>
@@ -39,10 +40,28 @@ function MenuAcciones({ tarjeta, onAccion }) {
           color: colors.success, fontWeight: '600', fontFamily: "'Poppins', sans-serif",
           transition: 'all 0.15s'
         }}
-        onMouseEnter={e => { e.currentTarget.style.opacity = '0.8' }}
-        onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
       >
         ↺ Renovar
+      </button>
+    </div>
+  )
+
+  if (tarjeta.estado === 'Desactivada por impago') return (
+    <div onClick={e => e.stopPropagation()}>
+      <button
+        onClick={() => onAccion('pagar', tarjeta)}
+        style={{
+          background: colors.warningBg, border: 'none', borderRadius: radius.md,
+          padding: '5px 12px', cursor: 'pointer', fontSize: '12px',
+          color: colors.warning, fontWeight: '600', fontFamily: "'Poppins', sans-serif",
+          transition: 'all 0.15s'
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+      >
+        $ Pagar
       </button>
     </div>
   )
@@ -120,6 +139,7 @@ export default function Tarjetas() {
   const [showCambioMotor, setShowCambioMotor]         = useState(false)
   const [showCambioColor, setShowCambioColor]         = useState(false)
   const [showRenovar, setShowRenovar]                 = useState(false)
+  const [showPagar, setShowPagar]                     = useState(false)
   const [showDetalle, setShowDetalle]                 = useState(false)
   const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null)
 
@@ -151,6 +171,7 @@ export default function Tarjetas() {
     if (modal === 'motor')       setShowCambioMotor(true)
     if (modal === 'color')       setShowCambioColor(true)
     if (modal === 'renovar')     setShowRenovar(true)
+    if (modal === 'pagar')       setShowPagar(true)
   }
 
   const cerrarModales = () => {
@@ -159,6 +180,7 @@ export default function Tarjetas() {
     setShowCambioMotor(false)
     setShowCambioColor(false)
     setShowRenovar(false)
+    setShowPagar(false)
     setTarjetaSeleccionada(null)
   }
 
@@ -311,6 +333,7 @@ export default function Tarjetas() {
       {showCambioMotor && tarjetaSeleccionada && <CambioMotorModal tarjeta={tarjetaSeleccionada} onClose={cerrarModales} onSuccess={cargarTarjetas} />}
       {showCambioColor && tarjetaSeleccionada && <CambioColorModal tarjeta={tarjetaSeleccionada} onClose={cerrarModales} onSuccess={cargarTarjetas} />}
       {showRenovar && tarjetaSeleccionada && <RenovarModal tarjeta={tarjetaSeleccionada} onClose={cerrarModales} onSuccess={cargarTarjetas} />}
+      {showPagar && tarjetaSeleccionada && <PagarModal tarjeta={tarjetaSeleccionada} onClose={cerrarModales} onSuccess={cargarTarjetas} />}
       {showDetalle && tarjetaSeleccionada && (
         <DetalleTarjetaPanel
           tarjeta={tarjetaSeleccionada}
