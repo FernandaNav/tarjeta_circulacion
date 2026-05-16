@@ -3,6 +3,8 @@ import { colors } from '../styles/theme'
 
 const navItems = [
   { icon: '⊞', path: '/',         label: 'Dashboard' },
+  { icon: '◎', path: '/propietarios',  label: 'Propietarios' },
+  { icon: '⬡', path: '/vehiculos',    label: 'Vehículos'    },
   { icon: '◫', path: '/tarjetas', label: 'Tarjetas'  },
 ]
 

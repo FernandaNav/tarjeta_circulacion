@@ -4,12 +4,14 @@ import dotenv from 'dotenv'
 import tarjetasRouter from './routes/tarjetas.routes.js'
 import vehiculosRouter from './routes/vehiculos.routes.js'
 import propietariosRouter from './routes/propietarios.routes.js'
+import catalogosRouter from './routes/catalogos.routes.js'
 
 dotenv.config()
 
 const app = express()
 app.use(cors())
 app.use(express.json())
+app.use('/api', catalogosRouter)
 
 app.use('/api/tarjetas', tarjetasRouter)
 app.use('/api/vehiculos', vehiculosRouter)

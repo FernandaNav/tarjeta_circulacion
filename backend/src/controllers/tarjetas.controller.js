@@ -9,7 +9,7 @@ export const getTarjetas = async (req, res) => {
         tc.fecha_vencimiento,
         tc.estado,
         tc.motivo_desactivacion,
-        p.nombre_completo AS propietario,
+        p.nombres || ' ' || p.apellidos AS propietario,
         p.id_propietario,
         v.placa,
         v.id_vehiculo,
@@ -34,7 +34,8 @@ export const getTarjetaByNum = async (req, res) => {
     const { rows } = await pool.query(`
       SELECT
         tc.*,
-        p.nombre_completo AS propietario,
+        p.nombres || ' ' || p.apellidos AS propietario,
+        p.nombres, p.apellidos,
         p.nit, p.cui, p.telefono, p.direccion,
         v.placa, v.vin, v.num_motor, v.num_chasis, v.modelo_anio,
         l.nombre_linea, m.nombre_marca,
@@ -61,20 +62,17 @@ export const createTarjeta = async (req, res) => {
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
-
     const { rows } = await client.query(`
       INSERT INTO tarjeta_circulacion.tarjeta_circulacion
         (num_tarjeta, id_propietario, id_vehiculo, num_certificado_propiedad, fecha_emision, fecha_vencimiento)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `, [num_tarjeta, id_propietario, id_vehiculo, num_certificado_propiedad, fecha_emision, fecha_vencimiento])
-
     await client.query(`
       INSERT INTO tarjeta_circulacion.historial_propietario
         (num_tarjeta, id_propietario, fecha_inicio)
       VALUES ($1, $2, $3)
     `, [num_tarjeta, id_propietario, fecha_emision])
-
     await client.query('COMMIT')
     res.status(201).json(rows[0])
   } catch (err) {
@@ -108,25 +106,21 @@ export const cambiarPropietario = async (req, res) => {
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
-
     await client.query(`
       UPDATE tarjeta_circulacion.historial_propietario
       SET fecha_fin = CURRENT_DATE
       WHERE num_tarjeta = $1 AND fecha_fin IS NULL
     `, [num])
-
     await client.query(`
       UPDATE tarjeta_circulacion.tarjeta_circulacion
       SET id_propietario = $1
       WHERE num_tarjeta = $2
     `, [id_propietario_nuevo, num])
-
     await client.query(`
       INSERT INTO tarjeta_circulacion.historial_propietario
         (num_tarjeta, id_propietario, fecha_inicio, motivo_cambio)
       VALUES ($1, $2, CURRENT_DATE, $3)
     `, [num, id_propietario_nuevo, motivo_cambio])
-
     await client.query('COMMIT')
     res.json({ message: 'Propietario actualizado correctamente' })
   } catch (err) {
@@ -146,7 +140,7 @@ export const getHistorial = async (req, res) => {
         hp.fecha_inicio,
         hp.fecha_fin,
         hp.motivo_cambio,
-        p.nombre_completo AS propietario,
+        p.nombres || ' ' || p.apellidos AS propietario,
         p.nit, p.cui, p.telefono
       FROM tarjeta_circulacion.historial_propietario hp
       JOIN tarjeta_circulacion.propietario p ON hp.id_propietario = p.id_propietario
@@ -174,13 +168,12 @@ export const getEstadisticas = async (req, res) => {
         COUNT(*) AS total
       FROM tarjeta_circulacion.tarjeta_circulacion
     `)
-
     const { rows: proximas } = await pool.query(`
       SELECT
         tc.num_tarjeta,
         tc.fecha_vencimiento,
         tc.estado,
-        p.nombre_completo AS propietario,
+        p.nombres || ' ' || p.apellidos AS propietario,
         v.placa,
         l.nombre_linea AS linea,
         m.nombre_marca AS marca
@@ -194,7 +187,6 @@ export const getEstadisticas = async (req, res) => {
       ORDER BY tc.fecha_vencimiento ASC
       LIMIT 5
     `)
-
     res.json({ estadisticas: rows[0], proximas_a_vencer: proximas })
   } catch (err) {
     res.status(500).json({ error: err.message })

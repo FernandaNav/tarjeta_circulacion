@@ -1,19 +1,28 @@
 import { useEffect, useState } from 'react'
-import { tarjetasService } from '../services/api'
-import { colors, shadows, radius } from '../styles/theme'
+import { tarjetasService, vehiculosService } from '../services/api'
+import { colors, radius } from '../styles/theme'
 
 export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
-  const [detalle, setDetalle]   = useState(null)
-  const [historial, setHistorial] = useState([])
-  const [loading, setLoading]   = useState(true)
+  const [detalle, setDetalle]           = useState(null)
+  const [historial, setHistorial]       = useState([])
+  const [histMotor, setHistMotor]       = useState([])
+  const [histColor, setHistColor]       = useState([])
+  const [loading, setLoading]           = useState(true)
 
   useEffect(() => {
     if (!tarjeta) return
     Promise.all([
       tarjetasService.getOne(tarjeta.num_tarjeta),
-      tarjetasService.getHistorial(tarjeta.num_tarjeta)
+      tarjetasService.getHistorial(tarjeta.num_tarjeta),
+      vehiculosService.getHistorialMotor(tarjeta.id_vehiculo),
+      vehiculosService.getHistorialColor(tarjeta.id_vehiculo),
     ])
-      .then(([det, hist]) => { setDetalle(det.data); setHistorial(hist.data) })
+      .then(([det, hist, motor, color]) => {
+        setDetalle(det.data)
+        setHistorial(hist.data)
+        setHistMotor(motor.data)
+        setHistColor(color.data)
+      })
       .finally(() => setLoading(false))
   }, [tarjeta])
 
@@ -106,6 +115,7 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                 <Row label="Num. chasis" value={detalle.num_chasis || '—'} mono />
               </Section>
 
+              {/* HISTORIAL PROPIETARIOS */}
               <Section title={`Historial de propietarios (${historial.length})`}>
                 {historial.length === 0 && <p style={{ fontSize: '12px', color: colors.textSub }}>Sin historial</p>}
                 {historial.map((h, i) => (
@@ -127,6 +137,57 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                     {h.motivo_cambio && <p style={{ fontSize: '11px', color: colors.textSub, marginTop: '4px' }}>{h.motivo_cambio}</p>}
                   </div>
                 ))}
+              </Section>
+
+              {/* HISTORIAL MOTOR */}
+              <Section title={`Historial de motor (${histMotor.length})`}>
+                {histMotor.length === 0
+                  ? <p style={{ fontSize: '12px', color: colors.textSub }}>Sin cambios de motor</p>
+                  : histMotor.map((h, i) => (
+                    <div key={i} style={{
+                      background: colors.bgInput, border: `1px solid ${colors.border}`,
+                      borderRadius: radius.md, padding: '12px', marginBottom: '8px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '11px', fontFamily: 'monospace', color: colors.textSub, textDecoration: 'line-through' }}>
+                          {h.num_motor_anterior || '—'}
+                        </span>
+                        <span style={{ color: colors.textMuted, fontSize: '12px' }}>→</span>
+                        <span style={{ fontSize: '11px', fontFamily: 'monospace', color: colors.primary, fontWeight: '600' }}>
+                          {h.num_motor_nuevo}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '11px', color: colors.textSub }}>{fecha(h.fecha_cambio)}</p>
+                      {h.motivo && <p style={{ fontSize: '11px', color: colors.textSub, marginTop: '4px' }}>{h.motivo}</p>}
+                    </div>
+                  ))
+                }
+              </Section>
+
+              {/* HISTORIAL COLOR */}
+              <Section title={`Historial de color (${histColor.length})`}>
+                {histColor.length === 0
+                  ? <p style={{ fontSize: '12px', color: colors.textSub }}>Sin cambios de color</p>
+                  : histColor.map((h, i) => (
+                    <div key={i} style={{
+                      background: colors.bgInput, border: `1px solid ${colors.border}`,
+                      borderRadius: radius.md, padding: '12px', marginBottom: '8px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '11px', color: colors.textSub, textDecoration: 'line-through' }}>
+                          {h.color_anterior || '—'}
+                        </span>
+                        <span style={{ color: colors.textMuted, fontSize: '12px' }}>→</span>
+                        <span style={{ fontSize: '11px', color: colors.primary, fontWeight: '600' }}>
+                          {h.color_nuevo}
+                          {h.es_principal && <span style={{ marginLeft: '4px', fontSize: '10px', color: colors.success }}>(principal)</span>}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '11px', color: colors.textSub }}>{fecha(h.fecha_cambio)}</p>
+                      {h.motivo && <p style={{ fontSize: '11px', color: colors.textSub, marginTop: '4px' }}>{h.motivo}</p>}
+                    </div>
+                  ))
+                }
               </Section>
             </>
           )

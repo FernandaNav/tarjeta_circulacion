@@ -91,3 +91,79 @@ export const cambiarColor = async (req, res) => {
     client.release()
   }
 }
+
+export const getHistorialMotor = async (req, res) => {
+  const { id } = req.params
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        id_historial_motor,
+        num_motor_anterior,
+        num_motor_nuevo,
+        fecha_cambio,
+        motivo
+      FROM tarjeta_circulacion.historial_motor
+      WHERE id_vehiculo = $1
+      ORDER BY fecha_cambio DESC
+    `, [id])
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
+
+export const getHistorialColor = async (req, res) => {
+  const { id } = req.params
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        id_historial_color,
+        color_anterior,
+        color_nuevo,
+        es_principal,
+        fecha_cambio,
+        motivo
+      FROM tarjeta_circulacion.historial_color
+      WHERE id_vehiculo = $1
+      ORDER BY fecha_cambio DESC
+    `, [id])
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
+
+export const createVehiculo = async (req, res) => {
+  const { placa, vin, num_chasis, num_serie, num_motor, modelo_anio, id_linea, id_tipo_vehiculo, id_tipo_uso, colores } = req.body
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    const { rows } = await client.query(`
+      INSERT INTO tarjeta_circulacion.vehiculo
+        (placa, vin, num_chasis, num_serie, num_motor, modelo_anio, id_linea, id_tipo_vehiculo, id_tipo_uso)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `, [placa, vin, num_chasis, num_serie, num_motor, modelo_anio, id_linea, id_tipo_vehiculo, id_tipo_uso])
+
+    const id = rows[0].id_vehiculo
+
+    // insertar colores
+    if (colores && colores.length > 0) {
+      for (const c of colores) {
+        await client.query(`
+          INSERT INTO tarjeta_circulacion.color_vehiculo (id_vehiculo, color, es_principal)
+          VALUES ($1, $2, $3)
+        `, [id, c.color, c.es_principal])
+      }
+    }
+
+    await client.query('COMMIT')
+    res.status(201).json(rows[0])
+  } catch (err) {
+    await client.query('ROLLBACK')
+    res.status(500).json({ error: err.message })
+  } finally {
+    client.release()
+  }
+}
