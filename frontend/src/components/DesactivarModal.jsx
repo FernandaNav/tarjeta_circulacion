@@ -28,9 +28,9 @@ export default function DesactivarModal({ tarjeta, onClose, onSuccess }) {
         borderRadius: radius.md, padding: '12px 16px', marginBottom: '18px'
       }}>
         <p style={{ fontSize: '12px', color: colors.danger, marginBottom: '4px', fontWeight: '600' }}>
-          ⚠ Estás por desactivar la siguiente tarjeta
+          Estás por desactivar la siguiente tarjeta
         </p>
-        <p style={{ fontSize: '13px', color: colors.textMain, fontFamily: 'monospace', fontWeight: '600' }}>{tarjeta.num_tarjeta}</p>
+        <p style={{ fontSize: '13px', color: colors.textMain, fontFamily: "'Poppins', sans-serif", fontWeight: '600' }}>{tarjeta.num_tarjeta}</p>
         <p style={{ fontSize: '12px', color: colors.textSub }}>{tarjeta.propietario} — {tarjeta.placa}</p>
       </div>
 

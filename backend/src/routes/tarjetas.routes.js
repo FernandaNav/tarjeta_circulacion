@@ -6,7 +6,8 @@ import {
   updateEstado,
   cambiarPropietario,
   getHistorial,
-  getEstadisticas
+  getEstadisticas,
+  renovarTarjeta
 } from '../controllers/tarjetas.controller.js'
 
 const router = Router()
@@ -18,5 +19,6 @@ router.get('/:num/historial', getHistorial)
 router.post('/', createTarjeta)
 router.patch('/:num/estado', updateEstado)
 router.post('/:num/cambio-propietario', cambiarPropietario)
+router.patch('/:num/renovar', renovarTarjeta)
 
 export default router

@@ -14,7 +14,7 @@ export default function CambioPropietarioModal({ tarjeta, onClose, onSuccess }) 
   useEffect(() => { propietariosService.getAll().then(r => setPropietarios(r.data)) }, [])
 
   const handleSubmit = async () => {
-    if (!idPropietarioNuevo || !motivoCambio) { setError('Completá todos los campos.'); return }
+    if (!idPropietarioNuevo || !motivoCambio) { setError('Completa todos los campos.'); return }
     setLoading(true); setError(null)
     try {
       await tarjetasService.cambiarPropietario(tarjeta.num_tarjeta, {
@@ -33,7 +33,7 @@ export default function CambioPropietarioModal({ tarjeta, onClose, onSuccess }) 
         borderRadius: radius.md, padding: '12px 16px', marginBottom: '18px'
       }}>
         <p style={{ fontSize: '11px', color: colors.primary, marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tarjeta</p>
-        <p style={{ fontSize: '13px', color: colors.textMain, fontFamily: 'monospace', fontWeight: '600' }}>{tarjeta.num_tarjeta}</p>
+        <p style={{ fontSize: '13px', color: colors.textMain, fontFamily: "'Poppins', sans-serif", fontWeight: '600' }}>{tarjeta.num_tarjeta}</p>
         <p style={{ fontSize: '12px', color: colors.textSub }}>{tarjeta.placa}</p>
       </div>
 
@@ -45,7 +45,7 @@ export default function CambioPropietarioModal({ tarjeta, onClose, onSuccess }) 
       <div style={fieldStyle}>
         <label style={labelStyle}>Nuevo propietario *</label>
         <select style={inputStyle} value={idPropietarioNuevo} onChange={e => setIdPropietarioNuevo(e.target.value)}>
-          <option value="">Seleccioná el nuevo propietario</option>
+          <option value="">Selecciona el nuevo propietario</option>
           {propietarios.filter(p => p.id_propietario !== tarjeta.id_propietario).map(p => (
             <option key={p.id_propietario} value={p.id_propietario}>{p.nombre_completo} — {p.nit}</option>
           ))}

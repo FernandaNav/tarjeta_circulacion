@@ -76,16 +76,20 @@ export default function Propietarios() {
   )
 
   return (
-    <div style={{ padding: '28px 32px', background: colors.bgMain, minHeight: '100vh', fontFamily: 'Inter, DM Sans, sans-serif' }}>
+    <div style={{ padding: '28px 32px', background: colors.bgMain, minHeight: '100vh', fontFamily: "'Poppins', sans-serif" }}>
 
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: '700', color: colors.textMain, marginBottom: '2px' }}>Propietarios</h1>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.textMain, marginBottom: '4px', fontFamily: "'Poppins', sans-serif" }}>Propietarios</h1>
           <p style={{ fontSize: '13px', color: colors.textSub }}>{filtrados.length} propietario{filtrados.length !== 1 ? 's' : ''} registrado{filtrados.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowNuevo(true)} style={{ ...btnPrimary, boxShadow: shadows.button }}>
-          + Nuevo propietario
+        <button  onClick={() => setShowNuevo(true)}  style={{ ...btnPrimary, boxShadow: shadows.button }}
+        onMouseEnter={e => { e.currentTarget.style.background = colors.primaryHover
+          e.currentTarget.style.transform = 'translateY(-1px)'}}
+        onMouseLeave={e => { e.currentTarget.style.background = colors.primary
+          e.currentTarget.style.transform = 'translateY(0)'}}>
+            + Nuevo Propietario
         </button>
       </div>
 
@@ -99,7 +103,7 @@ export default function Propietarios() {
         <input
           type="text" placeholder="Buscar por nombre, NIT o CUI..."
           value={busqueda} onChange={e => setBusqueda(e.target.value)}
-          style={{ background: 'none', border: 'none', outline: 'none', fontSize: '13px', color: colors.textMain, width: '100%', fontFamily: 'Inter, DM Sans, sans-serif' }}
+          style={{ background: 'none', border: 'none', outline: 'none', fontSize: '13px', color: colors.textMain, width: '100%', fontFamily: "'Poppins', sans-serif" }}
         />
       </div>
 
@@ -109,10 +113,10 @@ export default function Propietarios() {
         <div style={{ background: colors.bgCard, borderRadius: radius.lg, boxShadow: shadows.card, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#fafbff' }}>
+              <tr style={{ background: colors.bgHover }}>
                 {['Nombre completo', 'NIT', 'CUI', 'Teléfono', 'Municipio', 'Departamento'].map(h => (
                   <th key={h} style={{
-                    textAlign: 'left', padding: '12px 16px',
+                    textAlign: 'center', padding: '12px 16px',
                     fontSize: '11px', color: colors.textSub,
                     textTransform: 'uppercase', letterSpacing: '0.6px',
                     fontWeight: '600', borderBottom: `1px solid ${colors.border}`
@@ -125,13 +129,13 @@ export default function Propietarios() {
                 <tr key={i}
                   style={{ borderBottom: `1px solid ${colors.border}`, transition: 'background 0.15s' }}
                   onMouseEnter={e => e.currentTarget.style.background = colors.bgHover}
-                  onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                  onMouseLeave={e => e.currentTarget.style.background = colors.bgCard}
                 >
                   <td style={{ padding: '13px 16px', fontSize: '13px', fontWeight: '600', color: colors.textMain }}>
                     {p.nombre_completo}
                   </td>
-                  <td style={{ padding: '13px 16px', fontSize: '12px', fontFamily: 'monospace', color: colors.primary }}>{p.nit}</td>
-                  <td style={{ padding: '13px 16px', fontSize: '12px', fontFamily: 'monospace', color: colors.textSub }}>{p.cui}</td>
+                  <td style={{ padding: '13px 16px', fontSize: '12px', fontFamily: "'Poppins', sans-serif", color: colors.primary }}>{p.nit}</td>
+                  <td style={{ padding: '13px 16px', fontSize: '12px', fontFamily: "'Poppins', sans-serif", color: colors.textSub }}>{p.cui}</td>
                   <td style={{ padding: '13px 16px', fontSize: '13px', color: colors.textSub }}>{p.telefono || '—'}</td>
                   <td style={{ padding: '13px 16px', fontSize: '13px', color: colors.textSub }}>{p.municipio}</td>
                   <td style={{ padding: '13px 16px', fontSize: '13px', color: colors.textSub }}>{p.departamento}</td>

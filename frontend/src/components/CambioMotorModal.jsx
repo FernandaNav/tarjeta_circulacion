@@ -28,7 +28,7 @@ export default function CambioMotorModal({ tarjeta, onClose, onSuccess }) {
         borderRadius: radius.md, padding: '12px 16px', marginBottom: '18px'
       }}>
         <p style={{ fontSize: '11px', color: colors.primary, marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Vehículo</p>
-        <p style={{ fontSize: '13px', color: colors.textMain, fontFamily: 'monospace', fontWeight: '600' }}>{tarjeta.placa}</p>
+        <p style={{ fontSize: '13px', color: colors.textMain, fontFamily: "'Poppins', sans-serif", fontWeight: '600' }}>{tarjeta.placa}</p>
         <p style={{ fontSize: '12px', color: colors.textSub }}>{tarjeta.marca} {tarjeta.linea} — {tarjeta.propietario}</p>
       </div>
 

@@ -192,3 +192,20 @@ export const getEstadisticas = async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 }
+
+export const renovarTarjeta = async (req, res) => {
+  const { num } = req.params
+  const { fecha_vencimiento } = req.body
+  try {
+    const { rows } = await pool.query(`
+      UPDATE tarjeta_circulacion.tarjeta_circulacion
+      SET estado = 'Activa', fecha_vencimiento = $1, motivo_desactivacion = NULL
+      WHERE num_tarjeta = $2 AND estado = 'Vencida'
+      RETURNING *
+    `, [fecha_vencimiento, num])
+    if (!rows.length) return res.status(400).json({ error: 'La tarjeta no existe o no está vencida' })
+    res.json(rows[0])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}

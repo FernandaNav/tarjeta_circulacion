@@ -56,6 +56,19 @@ export const cambiarMotor = async (req, res) => {
   }
 }
 
+export const getColores = async (req, res) => {
+  const { id } = req.params
+  try {
+    const result = await pool.query(
+      `SELECT color, es_principal FROM tarjeta_circulacion.color_vehiculo WHERE id_vehiculo = $1 ORDER BY es_principal DESC`,
+      [id]
+    )
+    res.json(result.rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
+
 export const cambiarColor = async (req, res) => {
   const { id } = req.params
   const { color_anterior, color_nuevo, es_principal, motivo } = req.body

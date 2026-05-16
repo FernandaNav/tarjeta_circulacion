@@ -78,7 +78,7 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                 borderRadius: radius.md, padding: '16px', marginBottom: '18px'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: '22px', color: colors.primary, fontWeight: '700' }}>
+                  <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: '22px', color: colors.primary, fontWeight: '700' }}>
                     {detalle.placa}
                   </span>
                   <span style={{
@@ -87,7 +87,7 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                     fontSize: '11px', fontWeight: '600'
                   }}>{detalle.estado}</span>
                 </div>
-                <p style={{ fontSize: '12px', color: colors.textSub, fontFamily: 'monospace' }}>{detalle.num_tarjeta}</p>
+                <p style={{ fontSize: '12px', color: colors.textSub, fontFamily: "'Poppins', sans-serif" }}>{detalle.num_tarjeta}</p>
               </div>
 
               <Section title="Tarjeta">
@@ -131,7 +131,7 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                         </span>
                       )}
                     </div>
-                    <p style={{ fontSize: '11px', color: colors.textSub, fontFamily: 'monospace' }}>
+                    <p style={{ fontSize: '11px', color: colors.textSub, fontFamily: "'Poppins', sans-serif" }}>
                       {fecha(h.fecha_inicio)} → {h.fecha_fin ? fecha(h.fecha_fin) : 'presente'}
                     </p>
                     {h.motivo_cambio && <p style={{ fontSize: '11px', color: colors.textSub, marginTop: '4px' }}>{h.motivo_cambio}</p>}
@@ -149,11 +149,11 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                       borderRadius: radius.md, padding: '12px', marginBottom: '8px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '11px', fontFamily: 'monospace', color: colors.textSub, textDecoration: 'line-through' }}>
+                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.textSub, textDecoration: 'line-through' }}>
                           {h.num_motor_anterior || '—'}
                         </span>
                         <span style={{ color: colors.textMuted, fontSize: '12px' }}>→</span>
-                        <span style={{ fontSize: '11px', fontFamily: 'monospace', color: colors.primary, fontWeight: '600' }}>
+                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.primary, fontWeight: '600' }}>
                           {h.num_motor_nuevo}
                         </span>
                       </div>
@@ -174,11 +174,11 @@ export default function DetalleTarjetaPanel({ tarjeta, onClose }) {
                       borderRadius: radius.md, padding: '12px', marginBottom: '8px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '11px', color: colors.textSub, textDecoration: 'line-through' }}>
+                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.textSub, textDecoration: 'line-through' }}>
                           {h.color_anterior || '—'}
                         </span>
                         <span style={{ color: colors.textMuted, fontSize: '12px' }}>→</span>
-                        <span style={{ fontSize: '11px', color: colors.primary, fontWeight: '600' }}>
+                        <span style={{ fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.primary, fontWeight: '600' }}>
                           {h.color_nuevo}
                           {h.es_principal && <span style={{ marginLeft: '4px', fontSize: '10px', color: colors.success }}>(principal)</span>}
                         </span>
@@ -216,7 +216,7 @@ function Row({ label, value, mono }) {
       <span style={{ fontSize: '12px', color: colors.textSub, minWidth: '100px' }}>{label}</span>
       <span style={{
         fontSize: '12px', color: colors.textMain, textAlign: 'right',
-        maxWidth: '220px', fontFamily: mono ? 'monospace' : 'inherit',
+        maxWidth: '220px', fontFamily: mono ? "'Poppins', sans-serif" : 'inherit',
         fontWeight: mono ? '600' : '400'
       }}>{value}</span>
     </div>

@@ -1,25 +1,25 @@
 export const colors = {
   // Fondos
-  bgMain:       '#F4F6FB',
+  bgMain:       '#E7E7E0',
   bgCard:       '#FFFFFF',
-  bgHover:      '#FAFBFF',
-  bgInput:      '#F4F6FB',
+  bgHover:      '#F2F2EC',
+  bgInput:      '#F2F2EC',
 
   // Sidebar
-  sidebar:      '#1E2A6E',
+  sidebar:      '#131935',
   sidebarText:  'rgba(255,255,255,0.5)',
-  sidebarActive:'rgba(79,111,245,0.25)',
+  sidebarActive:'rgba(78,0,0,0.35)',
 
   // Acentos
-  primary:      '#4F6FF5',
-  primaryHover: '#3d5ce0',
-  primaryLight: '#F0F3FF',
+  primary:      '#4E0000',
+  primaryHover: '#3a0000',
+  primaryLight: '#F5EDED',
   coral:        '#F88379',
   coralLight:   '#FFF0EF',
 
   // Texto
-  textMain:     '#1a1a2e',
-  textSub:      '#8892b0',
+  textMain:     '#131935',
+  textSub:      '#888888',
   textMuted:    '#b0b8d0',
 
   // Estados
@@ -36,13 +36,13 @@ export const colors = {
   dangerDot:    '#E05C5C',
 
   // Bordes
-  border:       '#F0F2F8',
-  borderCard:   '#eef0f8',
+  border:       '#E0E0D8',
+  borderCard:   '#E8E8E2',
 }
 
 export const shadows = {
   card:    '0 1px 4px rgba(0,0,0,0.06)',
-  button:  '0 4px 12px rgba(79,111,245,0.35)',
+  button:  '0 4px 12px rgba(78,0,0,0.35)',
   dropdown:'0 8px 24px rgba(0,0,0,0.12)',
 }
 

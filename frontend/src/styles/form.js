@@ -7,7 +7,7 @@ export const inputStyle = {
   borderRadius: radius.md,
   color: colors.textMain,
   fontSize: '13px', outline: 'none',
-  fontFamily: 'Inter, DM Sans, sans-serif',
+  fontFamily: "'Poppins', sans-serif",
   transition: 'border-color 0.15s'
 }
 
@@ -23,8 +23,9 @@ export const btnPrimary = {
   padding: '9px 18px', borderRadius: radius.md, border: 'none',
   background: colors.primary, color: 'white',
   cursor: 'pointer', fontSize: '13px', fontWeight: '600',
-  fontFamily: 'Inter, DM Sans, sans-serif',
-  transition: 'background 0.15s'
+  fontFamily: "'Poppins', sans-serif",
+  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+  transition: 'all 0.15s'
 }
 
 export const btnSecondary = {

@@ -106,16 +106,20 @@ export default function Vehiculos() {
   )
 
   return (
-    <div style={{ padding: '28px 32px', background: colors.bgMain, minHeight: '100vh', fontFamily: 'Inter, DM Sans, sans-serif' }}>
+        <div style={{ padding: '28px 32px', background: colors.bgMain, minHeight: '100vh', fontFamily: "'Poppins', sans-serif" }}>
 
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: '700', color: colors.textMain, marginBottom: '2px' }}>Vehículos</h1>
-          <p style={{ fontSize: '13px', color: colors.textSub }}>{filtrados.length} vehículo{filtrados.length !== 1 ? 's' : ''} registrado{filtrados.length !== 1 ? 's' : ''}</p>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.textMain, marginBottom: '4px', fontFamily: "'Poppins', sans-serif" }}>Vehículos</h1>
+          <p style={{ fontSize: '13px', color: colors.textSub, fontFamily: "'Poppins', sans-serif" }}>{filtrados.length} vehículo{filtrados.length !== 1 ? 's' : ''} registrado{filtrados.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowNuevo(true)} style={{ ...btnPrimary, boxShadow: shadows.button }}>
-          + Nuevo vehículo
+        <button onClick={() => setShowNuevo(true)} style={{ ...btnPrimary, boxShadow: shadows.button }}
+        onMouseEnter={e => { e.currentTarget.style.background = colors.primaryHover
+          e.currentTarget.style.transform = 'translateY(-1px)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = colors.primary
+          e.currentTarget.style.transform = 'translateY(0)' }} >
+            + Nuevo vehículo
         </button>
       </div>
 
@@ -129,7 +133,7 @@ export default function Vehiculos() {
         <input
           type="text" placeholder="Buscar por placa, marca o línea..."
           value={busqueda} onChange={e => setBusqueda(e.target.value)}
-          style={{ background: 'none', border: 'none', outline: 'none', fontSize: '13px', color: colors.textMain, width: '100%', fontFamily: 'Inter, DM Sans, sans-serif' }}
+          style={{ background: 'none', border: 'none', outline: 'none', fontSize: '13px', color: colors.textMain, width: '100%', fontFamily: "'Poppins', sans-serif" }}
         />
       </div>
 
@@ -139,10 +143,10 @@ export default function Vehiculos() {
         <div style={{ background: colors.bgCard, borderRadius: radius.lg, boxShadow: shadows.card, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#fafbff' }}>
+              <tr style={{ background: colors.bgHover }}>
                 {['Placa', 'Marca / Línea', 'Año', 'Tipo', 'Uso', 'VIN', 'Num. motor'].map(h => (
                   <th key={h} style={{
-                    textAlign: 'left', padding: '12px 16px',
+                    textAlign: 'center', padding: '12px 16px',
                     fontSize: '11px', color: colors.textSub,
                     textTransform: 'uppercase', letterSpacing: '0.6px',
                     fontWeight: '600', borderBottom: `1px solid ${colors.border}`
@@ -155,10 +159,10 @@ export default function Vehiculos() {
                 <tr key={i}
                   style={{ borderBottom: `1px solid ${colors.border}`, transition: 'background 0.15s' }}
                   onMouseEnter={e => e.currentTarget.style.background = colors.bgHover}
-                  onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                  onMouseLeave={e => e.currentTarget.style.background = colors.bgCard}
                 >
                   <td style={{ padding: '13px 16px' }}>
-                    <span style={{ background: colors.primaryLight, color: colors.primary, padding: '4px 10px', borderRadius: radius.sm, fontSize: '12px', fontFamily: 'monospace', fontWeight: '600' }}>
+                    <span style={{ background: colors.primaryLight, color: colors.primary, padding: '4px 10px', borderRadius: radius.sm, fontSize: '12px', fontFamily: "'Poppins', sans-serif", fontWeight: '600' }}>
                       {v.placa}
                     </span>
                   </td>
@@ -166,8 +170,8 @@ export default function Vehiculos() {
                   <td style={{ padding: '13px 16px', fontSize: '13px', color: colors.textSub }}>{v.modelo_anio}</td>
                   <td style={{ padding: '13px 16px', fontSize: '13px', color: colors.textSub }}>{v.tipo_vehiculo}</td>
                   <td style={{ padding: '13px 16px', fontSize: '13px', color: colors.textSub }}>{v.tipo_uso}</td>
-                  <td style={{ padding: '13px 16px', fontSize: '11px', fontFamily: 'monospace', color: colors.textSub }}>{v.vin || '—'}</td>
-                  <td style={{ padding: '13px 16px', fontSize: '11px', fontFamily: 'monospace', color: colors.textSub }}>{v.num_motor || '—'}</td>
+                  <td style={{ padding: '13px 16px', fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.textSub }}>{v.vin || '—'}</td>
+                  <td style={{ padding: '13px 16px', fontSize: '11px', fontFamily: "'Poppins', sans-serif", color: colors.textSub }}>{v.num_motor || '—'}</td>
                 </tr>
               ))}
               {filtrados.length === 0 && (

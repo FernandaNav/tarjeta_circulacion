@@ -31,11 +31,11 @@ export default function Dashboard() {
   ]
 
   return (
-    <div style={{ padding: '28px 32px', background: colors.bgMain, minHeight: '100vh', fontFamily: 'Inter, DM Sans, sans-serif' }}>
+    <div style={{ padding: '28px 32px', background: colors.bgMain, minHeight: '100vh', fontFamily: "'Poppins', sans-serif" }}>
 
       {/* HEADER */}
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: '700', color: colors.textMain, marginBottom: '4px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: '700', color: colors.textMain, marginBottom: '4px', fontFamily: "'Poppins', sans-serif" }}>
           Resumen general
         </h1>
         <p style={{ fontSize: '13px', color: colors.textSub }}>
@@ -100,7 +100,7 @@ export default function Dashboard() {
                 background: colors.primaryLight, border: 'none',
                 color: colors.primary, borderRadius: radius.md,
                 padding: '6px 14px', fontSize: '12px', fontWeight: '600',
-                cursor: 'pointer', fontFamily: 'Inter, DM Sans, sans-serif'
+                cursor: 'pointer', fontFamily: "'Poppins', sans-serif"
               }}
                 onMouseEnter={e => e.currentTarget.style.background = colors.primary && (e.currentTarget.style.color = 'white')}
                 onMouseLeave={e => { e.currentTarget.style.background = colors.primaryLight; e.currentTarget.style.color = colors.primary }}
