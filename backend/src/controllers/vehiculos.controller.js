@@ -180,3 +180,21 @@ export const createVehiculo = async (req, res) => {
     client.release()
   }
 }
+
+export const updateVehiculo = async (req, res) => {
+  const { id } = req.params
+  const { placa, vin, num_chasis, num_serie, modelo_anio, id_linea, id_tipo_vehiculo, id_tipo_uso } = req.body
+  try {
+    const { rows } = await pool.query(`
+      UPDATE tarjeta_circulacion.vehiculo
+      SET placa = $1, vin = $2, num_chasis = $3, num_serie = $4,
+          modelo_anio = $5, id_linea = $6, id_tipo_vehiculo = $7, id_tipo_uso = $8
+      WHERE id_vehiculo = $9
+      RETURNING *
+    `, [placa, vin, num_chasis, num_serie, modelo_anio, id_linea, id_tipo_vehiculo, id_tipo_uso, id])
+    if (!rows.length) return res.status(404).json({ error: 'Vehículo no encontrado' })
+    res.json(rows[0])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}

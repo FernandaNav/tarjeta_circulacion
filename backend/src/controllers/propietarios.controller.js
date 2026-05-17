@@ -36,3 +36,20 @@ export const createPropietario = async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 }
+
+export const updatePropietario = async (req, res) => {
+  const { id } = req.params
+  const { nombres, apellidos, nit, cui, direccion, telefono, id_municipio } = req.body
+  try {
+    const { rows } = await pool.query(`
+      UPDATE tarjeta_circulacion.propietario
+      SET nombres = $1, apellidos = $2, nit = $3, cui = $4, direccion = $5, telefono = $6, id_municipio = $7
+      WHERE id_propietario = $8
+      RETURNING *
+    `, [nombres, apellidos, nit, cui, direccion, telefono, id_municipio, id])
+    if (!rows.length) return res.status(404).json({ error: 'Propietario no encontrado' })
+    res.json(rows[0])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
