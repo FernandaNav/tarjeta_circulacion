@@ -1,4 +1,5 @@
 import pool from '../db.js'
+import { validarPlaca, validarVIN, validarAlfanumerico } from '../validaciones.js'
 
 export const getVehiculos = async (req, res) => {
   try {
@@ -148,6 +149,22 @@ export const getHistorialColor = async (req, res) => {
 
 export const createVehiculo = async (req, res) => {
   const { placa, vin, num_chasis, num_serie, num_motor, modelo_anio, id_linea, id_tipo_vehiculo, id_tipo_uso, colores } = req.body
+
+  if (!validarPlaca(placa))
+    return res.status(400).json({ error: 'Formato de placa inválido. Ejemplo: P-123ABC' })
+
+  if (vin && !validarVIN(vin))
+    return res.status(400).json({ error: 'VIN inválido. Debe tener exactamente 17 caracteres alfanuméricos (sin I, O ni Q)' })
+
+  if (num_motor && !validarAlfanumerico(num_motor))
+    return res.status(400).json({ error: 'Número de motor inválido. Solo letras, números y guiones.' })
+
+  if (num_chasis && !validarAlfanumerico(num_chasis))
+    return res.status(400).json({ error: 'Número de chasis inválido. Solo letras, números y guiones.' })
+
+  if (num_serie && !validarAlfanumerico(num_serie))
+    return res.status(400).json({ error: 'Número de serie inválido. Solo letras, números y guiones.' })
+
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
@@ -175,7 +192,7 @@ export const createVehiculo = async (req, res) => {
     res.status(201).json(rows[0])
   } catch (err) {
     await client.query('ROLLBACK')
-    res.status(500).json({ error: err.message })
+    manejarErrorDB(err, res)
   } finally {
     client.release()
   }
@@ -184,6 +201,18 @@ export const createVehiculo = async (req, res) => {
 export const updateVehiculo = async (req, res) => {
   const { id } = req.params
   const { placa, vin, num_chasis, num_serie, modelo_anio, id_linea, id_tipo_vehiculo, id_tipo_uso } = req.body
+  if (!validarPlaca(placa))
+    return res.status(400).json({ error: 'Formato de placa inválido. Ejemplo: P-123ABC' })
+
+  if (vin && !validarVIN(vin))
+    return res.status(400).json({ error: 'VIN inválido. Debe tener exactamente 17 caracteres alfanuméricos (sin I, O ni Q)' })
+
+  if (num_chasis && !validarAlfanumerico(num_chasis))
+    return res.status(400).json({ error: 'Número de chasis inválido.' })
+
+  if (num_serie && !validarAlfanumerico(num_serie))
+    return res.status(400).json({ error: 'Número de serie inválido.' })
+
   try {
     const { rows } = await pool.query(`
       UPDATE tarjeta_circulacion.vehiculo
@@ -195,6 +224,47 @@ export const updateVehiculo = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Vehículo no encontrado' })
     res.json(rows[0])
   } catch (err) {
+    manejarErrorDB(err, res)
+  }
+}
+
+export const getVehiculosSinTarjeta = async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        v.id_vehiculo, v.placa, v.vin, v.num_motor,
+        v.num_chasis, v.modelo_anio,
+        l.nombre_linea, m.nombre_marca,
+        tv.descripcion AS tipo_vehiculo,
+        tu.descripcion AS tipo_uso
+      FROM tarjeta_circulacion.vehiculo v
+      JOIN tarjeta_circulacion.linea l ON v.id_linea = l.id_linea
+      JOIN tarjeta_circulacion.marca m ON l.id_marca = m.id_marca
+      JOIN tarjeta_circulacion.tipo_vehiculo tv ON v.id_tipo_vehiculo = tv.id_tipo_vehiculo
+      JOIN tarjeta_circulacion.tipo_uso tu ON v.id_tipo_uso = tu.id_tipo_uso
+      WHERE v.id_vehiculo NOT IN (
+        SELECT id_vehiculo FROM tarjeta_circulacion.tarjeta_circulacion
+      )
+      ORDER BY v.id_vehiculo DESC
+    `)
+    res.json(rows)
+  } catch (err) {
     res.status(500).json({ error: err.message })
   }
+}
+
+const manejarErrorDB = (err, res) => {
+  if (err.code === '23505') {
+    if (err.constraint?.includes('placa'))
+      return res.status(400).json({ error: 'Ya existe un vehículo con esa placa.' })
+    if (err.constraint?.includes('vin'))
+      return res.status(400).json({ error: 'Ya existe un vehículo con ese VIN.' })
+    if (err.constraint?.includes('num_motor'))
+      return res.status(400).json({ error: 'Ya existe un vehículo con ese número de motor.' })
+    if (err.constraint?.includes('num_chasis'))
+      return res.status(400).json({ error: 'Ya existe un vehículo con ese número de chasis.' })
+    if (err.constraint?.includes('num_serie'))
+      return res.status(400).json({ error: 'Ya existe un vehículo con ese número de serie.' })
+  }
+  return res.status(500).json({ error: err.message })
 }

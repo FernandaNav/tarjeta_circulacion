@@ -1,4 +1,5 @@
 import pool from '../db.js'
+import { validarCertificado } from '../validaciones.js'
 
 export const getPropietarios = async (req, res) => {
   try {
@@ -33,7 +34,7 @@ export const createPropietario = async (req, res) => {
     `, [nombres, apellidos, nit, cui, direccion, telefono, id_municipio])
     res.status(201).json(rows[0])
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    manejarErrorDB(err, res)
   }
 }
 
@@ -50,6 +51,16 @@ export const updatePropietario = async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Propietario no encontrado' })
     res.json(rows[0])
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    manejarErrorDB(err, res)
   }
+}
+
+const manejarErrorDB = (err, res) => {
+  if (err.code === '23505') {
+    if (err.constraint?.includes('nit'))
+      return res.status(400).json({ error: 'Ya existe un propietario con ese NIT.' })
+    if (err.constraint?.includes('cui'))
+      return res.status(400).json({ error: 'Ya existe un propietario con ese CUI.' })
+  }
+  return res.status(500).json({ error: err.message })
 }

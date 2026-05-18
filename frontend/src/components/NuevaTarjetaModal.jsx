@@ -76,20 +76,25 @@ export default function NuevaTarjetaModal({ onClose, onSuccess }) {
   const hoy = new Date().toISOString().split('T')[0]
 
   const [form, setForm] = useState({
-    num_tarjeta: '', id_propietario: '', id_vehiculo: '',
+    id_propietario: '', id_vehiculo: '',
     num_certificado_propiedad: '', fecha_emision: hoy, fecha_vencimiento: '',
   })
 
   useEffect(() => {
     propietariosService.getAll().then(r => setPropietarios(r.data))
-    vehiculosService.getAll().then(r => setVehiculos(r.data))
+    vehiculosService.getSinTarjeta().then(r => setVehiculos(r.data))
   }, [])
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
+ const validarCertificado = (c) => /^[A-Z0-9\-]{5,30}$/i.test(c)
+
   const handleSubmit = async () => {
-    if (!form.num_tarjeta || !form.id_propietario || !form.id_vehiculo || !form.fecha_emision || !form.fecha_vencimiento) {
+    if (!form.id_propietario || !form.id_vehiculo || !form.num_certificado_propiedad || !form.fecha_emision || !form.fecha_vencimiento) {
       setError('Completa todos los campos obligatorios.'); return
+    }
+    if (!validarCertificado(form.num_certificado_propiedad)) {
+      setError('Certificado inválido. Solo letras, números y guiones (mín. 5 caracteres).'); return
     }
     if (form.fecha_vencimiento <= hoy) {
       setError('La fecha de vencimiento debe ser futura.'); return
@@ -111,10 +116,6 @@ export default function NuevaTarjetaModal({ onClose, onSuccess }) {
 
   return (
     <Modal title="Nueva tarjeta de circulación" onClose={onClose}>
-      <div style={fieldStyle}>
-        <label style={labelStyle}>Número de tarjeta *</label>
-        <input style={inputStyle} name="num_tarjeta" placeholder="TC-2025-0001" value={form.num_tarjeta} onChange={handleChange} />
-      </div>
 
       <SearchSelect
         label="Propietario *"

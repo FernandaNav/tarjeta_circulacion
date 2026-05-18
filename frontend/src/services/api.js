@@ -16,6 +16,7 @@ export const tarjetasService = {
 
 export const vehiculosService = {
   getAll: ()                   => api.get('/vehiculos'),
+    getSinTarjeta: ()            => api.get('/vehiculos/sin-tarjeta'),
   create: (data)               => api.post('/vehiculos', data),
   cambiarMotor: (id, data)     => api.post(`/vehiculos/${id}/cambio-motor`, data),
   cambiarColor: (id, data)     => api.post(`/vehiculos/${id}/cambio-color`, data),

@@ -46,12 +46,34 @@ export default function Vehiculos() {
     api.get('/tipos-uso').then(r => setTiposUso(r.data))
   }, [])
 
+const inferirTipoUso = (placa, tiposUso) => {
+    const prefijo = placa.toUpperCase().split('-')[0]
+    const mapa = {
+      'P':  'Particular',
+      'C':  'Comercial',
+      'M':  'Transporte público',
+      'O':  'Oficial',
+      'CD': 'Diplomático',
+      'CC': 'Diplomático',
+    }
+    const descripcion = mapa[prefijo]
+    if (!descripcion) return ''
+    const tipo = tiposUso.find(t => t.descripcion === descripcion)
+    return tipo?.id_tipo_uso || ''
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm(f => ({ ...f, [name]: value }))
     if (name === 'id_marca') {
       setLineasFiltradas(lineas.filter(l => l.id_marca === parseInt(value)))
       setForm(f => ({ ...f, id_marca: value, id_linea: '' }))
+    }
+    if (name === 'placa') {
+      const idTipoUso = inferirTipoUso(value, tiposUso)
+      if (idTipoUso) {
+        setForm(f => ({ ...f, placa: value, id_tipo_uso: idTipoUso }))
+      }
     }
   }
 
@@ -82,10 +104,28 @@ export default function Vehiculos() {
 
   const agregarColor  = () => setColores([...colores, { color: '', es_principal: false }])
   const quitarColor   = (i) => setColores(colores.filter((_, idx) => idx !== i))
+  const validarPlaca        = (p) => /^[A-Z]{1,3}-\d{2,4}[A-Z]{2,4}$/.test(p.toUpperCase())
+  const validarVIN          = (v) => /^[A-HJ-NPR-Z0-9]{17}$/.test(v.toUpperCase())
+  const validarAlfanumerico = (v) => /^[A-Z0-9\-]{3,50}$/i.test(v)
 
   const handleSubmitNuevo = async () => {
     if (!form.placa || !form.num_motor || !form.modelo_anio || !form.id_linea || !form.id_tipo_vehiculo || !form.id_tipo_uso) {
       setError('Completa los campos obligatorios.'); return
+    }
+    if (!validarPlaca(form.placa)) {
+      setError('Formato de placa inválido. Ejemplo válido: P-123ABC'); return
+    }
+    if (form.vin && !validarVIN(form.vin)) {
+      setError('VIN inválido. Debe tener exactamente 17 caracteres alfanuméricos (sin I, O ni Q).'); return
+    }
+    if (form.num_motor && !validarAlfanumerico(form.num_motor)) {
+      setError('Número de motor inválido. Solo letras, números y guiones.'); return
+    }
+    if (form.num_chasis && !validarAlfanumerico(form.num_chasis)) {
+      setError('Número de chasis inválido. Solo letras, números y guiones.'); return
+    }
+    if (form.num_serie && !validarAlfanumerico(form.num_serie)) {
+      setError('Número de serie inválido. Solo letras, números y guiones.'); return
     }
     if (colores.some(c => !c.color)) {
       setError('Completa todos los colores o elimina los vacíos.'); return
@@ -93,7 +133,7 @@ export default function Vehiculos() {
     setLoadingForm(true); setError(null)
     try {
       await vehiculosService.create({
-        placa: form.placa, vin: form.vin || null,
+        placa: form.placa.toUpperCase(), vin: form.vin || null,
         num_chasis: form.num_chasis || null, num_serie: form.num_serie || null,
         num_motor: form.num_motor, modelo_anio: parseInt(form.modelo_anio),
         id_linea: parseInt(form.id_linea),
@@ -112,10 +152,22 @@ export default function Vehiculos() {
     if (!form.placa || !form.modelo_anio || !form.id_linea || !form.id_tipo_vehiculo || !form.id_tipo_uso) {
       setError('Completa los campos obligatorios.'); return
     }
+    if (!validarPlaca(form.placa)) {
+      setError('Formato de placa inválido. Ejemplo válido: P-123ABC'); return
+    }
+    if (form.vin && !validarVIN(form.vin)) {
+      setError('VIN inválido. Debe tener exactamente 17 caracteres alfanuméricos (sin I, O ni Q).'); return
+    }
+    if (form.num_chasis && !validarAlfanumerico(form.num_chasis)) {
+      setError('Número de chasis inválido. Solo letras, números y guiones.'); return
+    }
+    if (form.num_serie && !validarAlfanumerico(form.num_serie)) {
+      setError('Número de serie inválido. Solo letras, números y guiones.'); return
+    }
     setLoadingForm(true); setError(null)
     try {
       await api.patch(`/vehiculos/${vehiculoSel.id_vehiculo}`, {
-        placa: form.placa, vin: form.vin || null,
+        placa: form.placa.toUpperCase(), vin: form.vin || null,
         num_chasis: form.num_chasis || null, num_serie: form.num_serie || null,
         modelo_anio: parseInt(form.modelo_anio),
         id_linea: parseInt(form.id_linea),

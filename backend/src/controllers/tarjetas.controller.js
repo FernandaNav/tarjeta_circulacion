@@ -1,7 +1,38 @@
 import pool from '../db.js'
+import { validarCertificado } from '../validaciones.js'
+
+// helper: marca como Vencidas las que ya pasaron su fecha
+const actualizarVencidas = async () => {
+  await pool.query(`
+    UPDATE tarjeta_circulacion.tarjeta_circulacion
+    SET estado = 'Vencida'
+    WHERE estado = 'Activa'
+    AND fecha_vencimiento < CURRENT_DATE
+  `)
+}
+
+// helper: genera el siguiente num_tarjeta del año actual
+const generarNumTarjeta = async (client) => {
+  const anio = new Date().getFullYear()
+  const { rows } = await client.query(`
+    SELECT num_tarjeta
+    FROM tarjeta_circulacion.tarjeta_circulacion
+    WHERE num_tarjeta LIKE $1
+    ORDER BY num_tarjeta DESC
+    LIMIT 1
+  `, [`TC-${anio}-%`])
+
+  let siguiente = 1
+  if (rows.length) {
+    const partes = rows[0].num_tarjeta.split('-')
+    siguiente = parseInt(partes[partes.length - 1]) + 1
+  }
+  return `TC-${anio}-${String(siguiente).padStart(4, '0')}`
+}
 
 export const getTarjetas = async (req, res) => {
   try {
+    await actualizarVencidas() // <-- CAMBIO
     const { rows } = await pool.query(`
       SELECT
         tc.num_tarjeta,
@@ -58,26 +89,38 @@ export const getTarjetaByNum = async (req, res) => {
 }
 
 export const createTarjeta = async (req, res) => {
-  const { num_tarjeta, id_propietario, id_vehiculo, num_certificado_propiedad, fecha_emision, fecha_vencimiento } = req.body
+  // CAMBIO: ya no recibimos num_tarjeta del body
+  const { id_propietario, id_vehiculo, num_certificado_propiedad, fecha_emision, fecha_vencimiento } = req.body
+  if (!id_propietario || !id_vehiculo || !num_certificado_propiedad || !fecha_emision || !fecha_vencimiento)
+    return res.status(400).json({ error: 'Todos los campos son obligatorios.' })
+
+  if (!validarCertificado(num_certificado_propiedad))
+    return res.status(400).json({ error: 'Formato de certificado inválido. Solo letras, números y guiones (mín. 5 caracteres).' })
+
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
+
+    const num_tarjeta = await generarNumTarjeta(client) // <-- CAMBIO
+
     const { rows } = await client.query(`
       INSERT INTO tarjeta_circulacion.tarjeta_circulacion
         (num_tarjeta, id_propietario, id_vehiculo, num_certificado_propiedad, fecha_emision, fecha_vencimiento)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `, [num_tarjeta, id_propietario, id_vehiculo, num_certificado_propiedad, fecha_emision, fecha_vencimiento])
+
     await client.query(`
       INSERT INTO tarjeta_circulacion.historial_propietario
         (num_tarjeta, id_propietario, fecha_inicio)
       VALUES ($1, $2, $3)
     `, [num_tarjeta, id_propietario, fecha_emision])
+
     await client.query('COMMIT')
     res.status(201).json(rows[0])
   } catch (err) {
     await client.query('ROLLBACK')
-    res.status(500).json({ error: err.message })
+    manejarErrorDB(err, res)
   } finally {
     client.release()
   }
@@ -155,6 +198,7 @@ export const getHistorial = async (req, res) => {
 
 export const getEstadisticas = async (req, res) => {
   try {
+    await actualizarVencidas() // <-- CAMBIO
     const { rows } = await pool.query(`
       SELECT
         COUNT(*) FILTER (WHERE estado = 'Activa') AS activas,
@@ -232,13 +276,11 @@ export const pagarTarjeta = async (req, res) => {
       RETURNING fecha_vencimiento
     `, [num])
     if (!rows.length) return res.status(400).json({ error: 'Tarjeta no encontrada o no está desactivada por impago' })
-    
     await client.query(`
       INSERT INTO tarjeta_circulacion.historial_renovacion
         (num_tarjeta, nueva_fecha_vencimiento, motivo)
       VALUES ($1, $2, $3)
     `, [num, rows[0].fecha_vencimiento, motivo || 'Reactivación por pago'])
-    
     await client.query('COMMIT')
     res.json(rows[0])
   } catch (err) {
@@ -260,4 +302,14 @@ export const getHistorialRenovaciones = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
+}
+
+const manejarErrorDB = (err, res) => {
+  if (err.code === '23505') {
+    if (err.constraint?.includes('uq_vehiculo_tarjeta'))
+      return res.status(400).json({ error: 'Este vehículo ya tiene una tarjeta de circulación registrada.' })
+    if (err.constraint?.includes('uq_certificado'))
+      return res.status(400).json({ error: 'Ya existe una tarjeta con ese número de certificado de propiedad.' })
+  }
+  return res.status(500).json({ error: err.message })
 }
